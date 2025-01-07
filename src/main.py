@@ -1,11 +1,14 @@
 from yaml_devices_parser import parse_yaml
 from mqtt_handler import MqttHandler
 import threading
+from homeassistant import HomeAssistant
 
 def main():
     userconfig = parse_yaml('../config/devices.yaml')
     mqtt_handlers = {}
     mqtt_threads = {}
+
+    homeassistant = HomeAssistant()
     
     for broker in userconfig:
         mqtt_handlers[broker] = MqttHandler(userconfig[broker])

@@ -1,8 +1,12 @@
 import paho.mqtt.client as mqtt
 import device_handlers
+import devices
+from homeassistant import HomeAssistant
 
 class MqttHandler:
     def __init__(self,userconfig):
+
+        self.homeassistant = HomeAssistant()
 
         self.broker_url = userconfig["url"]
         self.broker_port = userconfig["port"]
@@ -14,6 +18,7 @@ class MqttHandler:
         self.topic_device_mapping = {}
         for device in self.devices:
             self.topic_device_mapping[self.devices[device]["topic"]] = (device, self.devices[device]["unique_id"])
+            self.homeassistant.register_device(self.devices[device], self)
 
         self.mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
         self.mqttc.on_connect = self.on_connect
@@ -38,5 +43,17 @@ class MqttHandler:
 
     def on_message(self, client, userdata, message):
         topic = message.topic
-        print("Received message from topic",topic)
+        print("Received message from topic", topic)
+        matched_device = None
+        for mapped_topic in self.topic_device_mapping:
+            if topic.startswith(mapped_topic):
+                matched_device = self.topic_device_mapping[mapped_topic]
+                break
+
+        if matched_device:
+            device, uuid = matched_device
+            handler = device_handlers.handlers_list[self.devices[device]["type"]]
+            handler.on_message(uuid, device, message)
+        else:
+            print("Topic not found in mapping")
         
