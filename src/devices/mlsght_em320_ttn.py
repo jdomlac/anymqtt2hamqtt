@@ -2,23 +2,52 @@ import json
 
 class mlsght_em320_ttn:
 
-    def on_message(unique_id, device_name, message):
-        print(message)
+    def on_message(unique_id, device_name, topic, payload, homeassistant):
+        if topic.endswith("up"):
+            payload_json = json.loads(payload.decode("utf-8"))
+            homeassistant.publish(unique_id, json.dumps(payload_json["uplink_message"]["decoded_payload"]))
 
     def on_downlink(unique_id, device_name, message, mqtt_handler):
         pass
 
-    def get_discovery_payload(unique_id):
+    def get_discovery_payload(device, device_name):
+        unique_id = device["unique_id"]
         ret_val = {
-            "name": "EM320",
-            "unique_id": unique_id,
-            "state_topic": f"homeassistant/sensor/{unique_id}/state",
-            "availability_topic": f"homeassistant/sensor/{unique_id}/availability",
-            "payload_available": "online",
-            "payload_not_available": "offline",
-            "json_attributes_topic": f"homeassistant/sensor/{unique_id}/attributes",
-            "unit_of_measurement": "W",
-            "value_template": "{{ value_json.power }}"
+            "dev": {
+                "ids": unique_id,
+                "name": device_name,
+                "mf": "Milesight",
+                "mdl": "EM320",
+            },
+            "o": {
+                "name": "anymqtt2hamqtt",
+                "sw": "1.0",
+            },
+            "cmps": {
+                f"{unique_id}_temperature": {
+                    "p": "sensor",
+                    "device_class": "temperature",
+                    "unit_of_measurement": "°C",
+                    "value_template": "{{ value_json.temperature }}",
+                    "unique_id": f"{unique_id}_temperature",
+                },
+                f"{unique_id}_humidity": {
+                    "p": "sensor",
+                    "device_class": "humidity",
+                    "unit_of_measurement": "%",
+                    "value_template": "{{ value_json.humidity }}",
+                    "unique_id": f"{unique_id}_humidity",
+                },
+                f"{unique_id}_battery": {
+                    "p": "sensor",
+                    "device_class": "battery",
+                    "unit_of_measurement": "%",
+                    "value_template": "{{ value_json.battery }}",
+                    "unique_id": f"{unique_id}_battery",
+                },
+            },
+            "state_topic": f"anymqtt2hamqtt/{unique_id}/state",
+            "qos": 2,
         }
 
         return json.dumps(ret_val)

@@ -1,0 +1,11 @@
+# Example of devices configuration file
+# Rename this file to devices.yaml and fill in the required fields
+broker1:
+  devices:
+    em320:
+      topic: ttn/em320
+      type: em320_ttn
+  username: exampleuser
+  password: examplepassword
+  port: 1883
+  url: eu1.cloud.thethings.network

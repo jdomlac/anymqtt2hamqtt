@@ -1,0 +1,6 @@
+# Rename this file to config.yaml and fill in the required fields
+# The homeassistant broker configuration
+broker_url: localhost
+broker_port: 1883
+broker_username:
+broker_password:

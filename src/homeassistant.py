@@ -54,16 +54,18 @@ class HomeAssistant(metaclass=HomeAssistantSingleton):
     def broadcast_discovery(self):
         while True:
             for uuid in self.devices:
-                device, mqtt_handler = self.devices[uuid]
+                device, mqtt_handler, device_name = self.devices[uuid]
                 device_type = device["type"]
                 device_handler = device_handlers.handlers_list[device_type]
-                self.mqttc.publish(f"homeassistant/sensor/{uuid}/config", device_handler.get_discovery_payload(device))
+                payload = device_handler.get_discovery_payload(device, device_name)
+                self.mqttc.publish(f"homeassistant/device/{uuid}/config", payload)
                 print("Broadcasted discovery for",device)
-            time.sleep(5)
+            time.sleep(60)
 
-    def publish(self, unique_id, device_name, payload):
-        pass
+    def publish(self, uuid, payload):
+        topic = f"anymqtt2hamqtt/{uuid}/state"
+        self.mqttc.publish(topic, payload)
 
-    def register_device(self, device, mqtt_handler):
-        print("Registering device",device)
-        self.devices[device["unique_id"]] = (device, mqtt_handler)
+    def register_device(self, device, mqtt_handler, device_name):
+        print("Registering device",device_name)
+        self.devices[device["unique_id"]] = (device, mqtt_handler, device_name)

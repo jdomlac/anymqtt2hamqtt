@@ -18,7 +18,7 @@ class MqttHandler:
         self.topic_device_mapping = {}
         for device in self.devices:
             self.topic_device_mapping[self.devices[device]["topic"]] = (device, self.devices[device]["unique_id"])
-            self.homeassistant.register_device(self.devices[device], self)
+            self.homeassistant.register_device(self.devices[device], self, device)
 
         self.mqttc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
         self.mqttc.on_connect = self.on_connect
@@ -53,7 +53,7 @@ class MqttHandler:
         if matched_device:
             device, uuid = matched_device
             handler = device_handlers.handlers_list[self.devices[device]["type"]]
-            handler.on_message(uuid, device, message)
+            handler.on_message(uuid, device, topic, message.payload, self.homeassistant)
         else:
             print("Topic not found in mapping")
         
