@@ -56,4 +56,8 @@ class MqttHandler:
             handler.on_message(uuid, device, topic, message.payload, self.homeassistant)
         else:
             print("Topic not found in mapping")
-        
+
+    def publish(self, name, topic, payload):
+        base_topic = self.devices[name]["topic"]
+        print("Publishing to",name,base_topic+topic,payload)
+        self.mqttc.publish(base_topic + topic, payload)

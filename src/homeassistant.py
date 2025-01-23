@@ -46,10 +46,17 @@ class HomeAssistant(metaclass=HomeAssistantSingleton):
             print(f"Failed to connect: {reason_code}. Retrying...")
         else:
             print("Broker",self.brokerconfig["broker_url"],"succesfully connected")
-            client.subscribe("$SYS/#")
+            client.subscribe("anymqtt2hamqtt/#")
 
     def on_message(self, client, userdata, message):
         topic = message.topic
+        device = topic.split("/")[1]
+        for uuid in self.devices:
+            if uuid == device:
+                device, mqtt_handler, device_name = self.devices[uuid]
+                device_type = device["type"]
+                device_handler = device_handlers.handlers_list[device_type]
+                device_handler.on_downlink(uuid, device_name, message, mqtt_handler)
 
     def broadcast_discovery(self):
         while True:
