@@ -9,8 +9,9 @@ class my_custom_sensor:
         if topic.endswith("up"):
             payload_json = json.loads(payload.decode("utf-8"))
             temperature = payload_json["uplink_message"]["decoded_payload"]["temperature_0"]
-            humidity = payload_json["uplink_message"]["decoded_payload"]["humidity_0"]
-            homeassistant.publish(unique_id, json.dumps({"temperature": temperature, "humidity": humidity}))
+            humidity = payload_json["uplink_message"]["decoded_payload"]["relative_humidity_0"]
+            digital = payload_json["uplink_message"]["decoded_payload"]["digital_out_0"]
+            homeassistant.publish(unique_id, json.dumps({"temperature": temperature, "humidity": humidity, "alarm_state": digital}))
         pass
 
     def on_downlink(unique_id, device_name, message, mqtt_handler):
